@@ -73,7 +73,9 @@ async def stream_file(request: Request, short_code: str):
 
     # Use all available clients for ultra-high-speed downloads
     clients = session_manager.get_all_clients()
-    client = clients[0]  # Use first client for initial message fetch
+    if not clients:
+        raise HTTPException(status_code=503, detail="Telegram client is not ready")
+    client = clients[0]
     
     try:
         # Fetch the message that contains the media
@@ -200,7 +202,7 @@ async def remux_file(request: Request, short_code: str, audio: int = 0):
 
 if __name__ == "__main__":
     import os
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 5000))
     # use loop="asyncio" to prevent Uvicorn from forcing SelectorEventLoop on Windows,
     # which causes NotImplementedError with asyncio.create_subprocess_exec
     uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True, loop="asyncio")
